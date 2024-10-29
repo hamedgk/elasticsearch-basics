@@ -7,6 +7,78 @@ run docker container of elasticsearch 7.17
 ```bash
 docker run -d --name elasticsearch --net elastic_network -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -e ES_JAVA_OPTS="-Xms1g -Xmx1g" elasticsearch:7.17.25
 ```
+&nbsp;
+&nbsp;
+&nbsp;
+
+### create students index with below mappings
+```json
+{
+  "mappings": {
+    "properties": {
+      "first_name": { 
+        "type": "text", 
+        "fields": { 
+          "keyword": { "type": "keyword" } 
+        }
+      },
+      "last_name": { 
+        "type": "text", 
+        "fields": { 
+          "keyword": { "type": "keyword" } 
+        }
+      },
+      "date_of_birth": { 
+        "type": "date",
+        "format" : "yyyy/MM/dd"
+      },
+      "age": { 
+        "type": "short" 
+      },
+      "educational_background": {
+        "type": "nested",
+        "properties": {
+          "degree": { 
+            "type": "keyword" 
+          },
+          "university_name": { 
+            "type": "keyword" 
+          },
+          "thesis": {
+            "type": "nested",
+            "properties": {
+              "title": { 
+                "type": "keyword" 
+              },
+              "score": { 
+                "type": "short" 
+              }
+            }
+          }
+        }
+      },
+      "address": {
+        "type": "nested",
+        "properties": {
+          "province": { 
+            "type": "keyword" 
+          },
+          "city": { 
+            "type": "keyword" 
+          },
+          "details": { 
+            "type": "text" 
+          }
+        }
+      }
+    }
+  }
+}
+
+```
+&nbsp;
+&nbsp;
+&nbsp;
 
 ### populate with a few documents
 ```json
