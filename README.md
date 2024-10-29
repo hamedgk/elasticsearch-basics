@@ -220,3 +220,22 @@ docker run -d --name elasticsearch --net elastic_network -p 9200:9200 -p 9300:93
   "size": 0
 }
 ```
+
+### 1st query with scripts
+```json
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "script": {
+            "script": {
+              "source": "doc['first_name.keyword'].value.contains('علی') && (doc['date_of_birth'].value.getYear() >= 1370 && doc['date_of_birth'].value.getYear() <= 1379)"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
