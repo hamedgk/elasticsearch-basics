@@ -281,3 +281,66 @@ if(params._source.educational_background != null){
     return 0;
 }
 ```
+
+### 3rd query with script
+```json
+{
+  "query": {
+    "range": {
+      "age": { 
+        "gte": 20, 
+        "lte": 50 
+      }
+    }
+  },
+  "aggs": {
+    "degree_distribution": {
+      "scripted_metric": {
+        "init_script": "{{init_script}}",
+        "map_script": "{{map_script}}",
+        "combine_script": "{{combine_script}}",
+        "reduce_script": "{{reduce_script}}"
+      }
+    }
+  },
+  "size": 0
+}
+```
+init script
+```ruby
+state.degree_counts = [:];
+```
+map script
+```ruby
+if (params['_source'].containsKey('educational_background')) {
+    for (edu in params['_source']['educational_background']) {
+        String degree = edu.degree;
+        if (degree != null) {
+            if (!state.degree_counts.containsKey(degree)) {
+                state.degree_counts[degree] = 0;
+            }
+            state.degree_counts[degree] += 1;
+        }
+    }
+}
+```
+combine script
+```ruby
+return state.degree_counts;
+```
+
+reduce script
+```ruby
+Map combined = [:];
+for (s in states) {
+    for (entry in s.entrySet()) {
+        String degree = entry.getKey();
+        int count = entry.getValue();
+        if (!combined.containsKey(degree)) {
+            combined[degree] = 0;
+        }
+        combined[degree] += count;
+    }
+}
+return combined;
+```
