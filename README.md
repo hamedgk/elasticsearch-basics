@@ -5,7 +5,7 @@ docker network create elastic_network
 ```
 run docker container of elasticsearch 7.17
 ```bash
-docker run -d --name elasticsearch --net elastic_network -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -e ES_JAVA_OPTS="-Xms1g -Xmx1g" elasticsearch:7.17.25
+docker run -d --name elasticsearch --net elastic_network -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -m 1GB elasticsearch:7.17.25
 ```
 &nbsp;
 &nbsp;
