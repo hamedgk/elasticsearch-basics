@@ -230,7 +230,12 @@ docker run -d --name elasticsearch --net elastic_network -p 9200:9200 -p 9300:93
         {
           "script": {
             "script": {
-              "source": "doc['first_name.keyword'].value.contains('علی') && (doc['date_of_birth'].value.getYear() >= 1370 && doc['date_of_birth'].value.getYear() <= 1379)"
+              "source": "doc['first_name.keyword'].value.contains(params.fname) && (doc['date_of_birth'].value.getYear() >= params.min70 && doc['date_of_birth'].value.getYear() < params.max70)",
+              "params" : {
+                "fname" : "علی",
+                "max70" : 1380,
+                "min70" : 1370
+              }
             }
           }
         }
