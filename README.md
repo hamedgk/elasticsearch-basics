@@ -271,7 +271,7 @@ docker run -d --name elasticsearch --net elastic_network -p 9200:9200 -p 9300:93
   "min_score" : 1
 }
 ```
-```ruby
+```java
 if(params._source.educational_background != null){
     for (education in params._source.educational_background){
         if(education.degree == params.degree && education.thesis.score > params.min_grade){
@@ -307,11 +307,11 @@ if(params._source.educational_background != null){
 }
 ```
 init script
-```ruby
+```java
 state.degree_counts = [:];
 ```
 map script
-```ruby
+```java
 if (params['_source'].containsKey('educational_background')) {
     for (edu in params['_source']['educational_background']) {
         String degree = edu.degree;
@@ -325,12 +325,12 @@ if (params['_source'].containsKey('educational_background')) {
 }
 ```
 combine script
-```ruby
+```java
 return state.degree_counts;
 ```
 
 reduce script
-```ruby
+```java
 Map combined = [:];
 for (s in states) {
     for (entry in s.entrySet()) {
@@ -343,4 +343,78 @@ for (s in states) {
     }
 }
 return combined;
+```
+### 4th query with script
+```json
+{
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "nested": {
+            "path": "address",
+            "query": {
+              "bool": {
+                "must": [
+                  { "match": { "address.city": "تهران" } },
+                  { "match": { "address.details": "ولیعصر" } }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "score_distribution_scripted": {
+      "scripted_metric": {
+        "init_script": "{{init_script}}",
+        "map_script": "{{map_script}}",
+        "combine_script": "{{combine_script}}",
+        "reduce_script": "{{reduce_script}}"
+      }
+    }
+  },
+  "size": 0
+}
+```
+init script
+```java
+state.scores_histogram = new HashMap();
+```
+map script
+```java
+if (params['_source'].containsKey('educational_background')) {
+    for (edu in params['_source']['educational_background']) {
+        if (edu.containsKey('thesis') && edu['thesis'].containsKey('score')) {
+            int score = edu['thesis']['score'];
+            String bucket = score.toString();
+            if (!state.scores_histogram.containsKey(bucket)) {
+                state.scores_histogram[bucket] = 0;
+            }
+            state.scores_histogram[bucket] += 1;
+        }
+    }
+}
+```
+combine script
+```java
+return state.scores_histogram;
+```
+
+reduce script
+```java
+Map final_histogram = new HashMap();
+for (state in states) {
+    for (entry in state.entrySet()) {
+        String bucket = entry.getKey();
+        int count = entry.getValue();
+        if (!final_histogram.containsKey(bucket)) {
+            final_histogram[bucket] = 0;
+        }
+        final_histogram[bucket] += count;
+    }
+}
+return final_histogram;
 ```
