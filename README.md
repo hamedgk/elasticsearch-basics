@@ -239,3 +239,40 @@ docker run -d --name elasticsearch --net elastic_network -p 9200:9200 -p 9300:93
   }
 }
 ```
+
+### 2nd query with scripts
+```json
+{
+  "query" : {
+    "bool" : {
+        "must" : [
+            {
+                "script_score" : {
+                    "query" : {
+                        "match_all" : {}
+                    },
+                    "script" : {
+                        "source" : "{{script_below}}",
+                        "params" : {
+                            "degree" : "کارشناسی",
+                            "min_grade" : 17
+                        }
+                    }
+                }
+            }
+        ]
+    }
+  },
+  "min_score" : 1
+}
+```
+```ruby
+if(params._source.educational_background != null){
+    for (education in params._source.educational_background){
+        if(education.degree == params.degree && education.thesis.score > params.min_grade){
+            return 1;
+        }
+    }
+    return 0;
+}
+```
